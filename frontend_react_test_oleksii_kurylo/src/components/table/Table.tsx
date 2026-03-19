@@ -1,29 +1,32 @@
-import { useContext, useState, useEffect } from "react";
-// import { ModalContext } from "../../providers/ModalProvider";
-import { TableContext } from "../../providers/TableProvider";
+import { useContext, useState } from "react";
+import { TableContext, type ICell} from "../../providers/TableProvider";
 
 import "./Table.css";
 
 export const Table = () => {
-  // const modalContext = useContext(ModalContext);
   const tableContext = useContext(TableContext);
   const columnSum: number[] = [];
   const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
 
-  // useEffect(() => {
-  //   modalContext?.isSubmited && console.log("App modalContext = ", modalContext)
-  // }, [modalContext]);
+  const onClickHandleToCell = (rowIndex: number, cellIndex: number) => {
+    const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
 
-  useEffect(() => {
-    console.log("hoveredIndexRow = ", hoveredIndexRow)
-  }, [hoveredIndexRow]);
-
-  useEffect(() => {
-    if (tableContext?.cells.length) {
-      console.log("Table tableContext = ", tableContext)
-      console.log("Table columnSum = ", columnSum)
-    }
-  }, [tableContext?.cells]);
+    tableData.forEach((row: ICell[], indexRow: number) => {
+      if (rowIndex === indexRow) {
+        row.forEach((cell: ICell, indexCell: number) => {
+          if (cellIndex === indexCell) {
+            cell.percentageInRow = Math.round((cell.amount + 1) / (cell.rowSum + 1) * 100);
+            cell.amount = cell.amount + 1;
+          } else {
+            cell.percentageInRow = Math.round(cell.amount / (cell.rowSum + 1) * 100);
+          }
+          cell.rowSum = cell.rowSum + 1;
+        });
+      }
+      
+    });
+    tableContext?.updateCells(tableData);
+  };
 
   return (
     <div className='table'>
@@ -60,6 +63,7 @@ export const Table = () => {
                             {!indexCell && <th key={`th-${indexRow}.${indexCell}`} scope="col">{`Cell values M = ${indexRow + 1}`}</th>}
                             <td
                               key={`th-${indexRow}.${indexCell + 1}`}
+                              onClick={() => onClickHandleToCell(indexRow, indexCell)}
                             >
                               {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow} %` : cell.amount}
                             </td>
