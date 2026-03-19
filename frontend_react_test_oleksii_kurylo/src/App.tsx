@@ -1,14 +1,17 @@
-import { useEffect, useRef } from 'react'
+import { useContext } from "react";
+import { ModalContext } from "./providers/ModalProvider";
+import { Modal } from "./components/modal/Modal"
+import { Table } from "./components/table/Table"
 
 import './App.css'
 
-function App() {
-  
-  return (
-    <>
-      test
-    </>
-  )
-}
 
-export default App
+export const App = () => {
+  const modalContext = useContext(ModalContext);
+
+  return (
+    <div className='app'>
+      {!modalContext?.isSubmited ? <Modal/> : <Table/>}
+    </div>
+  ); 
+}; 
