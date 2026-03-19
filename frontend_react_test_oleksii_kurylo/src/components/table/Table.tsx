@@ -18,7 +18,7 @@ export const Table = () => {
   const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
   const [highlightCellsIds, setHighlightCellsIds] = useState<DiffAmountType[]>([]);
   
-  const onClickHandleToCell = (rowIndex: number, cellIndex: number) => {
+  const onClickHandleToCell = (rowIndex: number, cellIndex: number, cell: ICell) => {
     const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
 
     tableData.forEach((row: ICell[], indexRow: number) => {
@@ -35,6 +35,7 @@ export const Table = () => {
       }
     });
     tableContext?.updateCells(tableData);
+    onHoverHandlerToCell(cell);
   };
 
   const onHoverHandlerToCell = (selectedCell: ICell) => {
@@ -68,6 +69,41 @@ export const Table = () => {
     });
     setHighlightCellsIds(resultSortedSet);
   };
+
+  const onClickSumHandler = (rowIndex: number) => {
+    const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
+    tableData.splice(rowIndex, 1)
+    tableContext?.updateCells(tableData);
+  }
+
+  const onClickEmptyCellHandler = () => {
+    const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
+    const rowLength = tableData[0].length;
+    const newRow: ICell[] = [];
+    const lastId: number = tableData[tableData.length - 1][tableData[tableData.length - 1].length - 1].id;
+    let correctRowSum = 0;
+
+    const amountGeneration = (): number => Math.round(Math.random() * 100);
+    let newRowSum = 0;
+    for (let i = 0; i < rowLength; i++) {
+      const amount = amountGeneration();
+      const newCellData: ICell = {
+        id: lastId + i + 1,
+        amount,
+        rowSum: newRowSum + amount,
+        percentageInRow: 0,
+      }
+      newRow.push(newCellData);
+    }
+
+    newRow.reverse().forEach((cellData, index) => {
+      correctRowSum = !index ? cellData.rowSum : correctRowSum;
+      cellData.percentageInRow = Math.round(cellData.amount / cellData.rowSum * 100);
+    })
+    
+    tableData.push(newRow.reverse());
+    tableContext?.updateCells(tableData);
+  }
 
   return (
     <div className='table'>
@@ -105,7 +141,7 @@ export const Table = () => {
                             <td
                               className={ highlightCellsIds.some((selectCell) => selectCell.id === cell.id) ? "highlight_limit" : ""}
                               key={`th-${indexRow}.${indexCell + 1}`}
-                              onClick={() => onClickHandleToCell(indexRow, indexCell)}
+                              onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
                               onMouseEnter={() => {onHoverHandlerToCell(cell)}}
                               onMouseLeave={() => {setHighlightCellsIds([])}}
                             >
@@ -117,6 +153,7 @@ export const Table = () => {
                                 scope="col"
                                 onMouseEnter={() => {setHoveredIndexRow(indexRow)}}
                                 onMouseLeave={() => {setHoveredIndexRow(null)}}
+                                onClick={() => onClickSumHandler(indexRow)}
                               >
                                 {cell.rowSum}
                               </th>
@@ -134,7 +171,13 @@ export const Table = () => {
                             <>
                               {!indexSum && <th key={`th-${indexRow + 1}.${indexSum}`} scope="col">60th percentile</th>}
                               <th key={`th-${indexRow + 1}.${indexSum + 1}`}>{sum*60/100}</th>
-                              {indexSum === row.length - 1 && <th key={`th-${indexRow + 1}.${indexSum + 2}`} scope="col"/>}
+                              {indexSum === row.length - 1 && (
+                                <th
+                                  key={`th-${indexRow + 1}.${indexSum + 2}`}
+                                  scope="col"
+                                  onClick={onClickEmptyCellHandler}
+                                />
+                              )}
                             </>
                           )
                         })

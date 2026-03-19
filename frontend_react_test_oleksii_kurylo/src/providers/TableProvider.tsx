@@ -79,12 +79,6 @@ const TableProvider: React.FC<React.ReactNode> = ({ children }) => {
     }
   },[rows, columns]);
 
-  useEffect(() => {
-    if (rows && columns) {
-      PrepareTableData();
-    }
-  },[rows, columns]);
-
   return (
     <TableContext.Provider
       value={{
