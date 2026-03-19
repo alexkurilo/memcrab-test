@@ -1,17 +1,22 @@
-import { useContext, useEffect } from "react";
-import { ModalContext } from "../../providers/ModalProvider";
+import { useContext, useState, useEffect } from "react";
+// import { ModalContext } from "../../providers/ModalProvider";
 import { TableContext } from "../../providers/TableProvider";
 
 import "./Table.css";
 
 export const Table = () => {
-  const modalContext = useContext(ModalContext);
+  // const modalContext = useContext(ModalContext);
   const tableContext = useContext(TableContext);
   const columnSum: number[] = [];
+  const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
+
+  // useEffect(() => {
+  //   modalContext?.isSubmited && console.log("App modalContext = ", modalContext)
+  // }, [modalContext]);
 
   useEffect(() => {
-    modalContext?.isSubmited && console.log("App modalContext = ", modalContext)
-  }, [modalContext]);
+    console.log("hoveredIndexRow = ", hoveredIndexRow)
+  }, [hoveredIndexRow]);
 
   useEffect(() => {
     if (tableContext?.cells.length) {
@@ -53,8 +58,21 @@ export const Table = () => {
                         return (
                           <>
                             {!indexCell && <th key={`th-${indexRow}.${indexCell}`} scope="col">{`Cell values M = ${indexRow + 1}`}</th>}
-                            <td key={`th-${indexRow}.${indexCell + 1}`}>{cell.amount}</td>
-                            {indexCell === row.length - 1 && <th key={`th-${indexRow}.${indexCell + 2}`} scope="col">{cell.rowSum}</th>}
+                            <td
+                              key={`th-${indexRow}.${indexCell + 1}`}
+                            >
+                              {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow} %` : cell.amount}
+                            </td>
+                            {indexCell === row.length - 1 && (
+                              <th
+                                key={`th-${indexRow}.${indexCell + 2}`} 
+                                scope="col"
+                                onMouseEnter={() => {setHoveredIndexRow(indexRow)}}
+                                onMouseLeave={() => {setHoveredIndexRow(null)}}
+                              >
+                                {cell.rowSum}
+                              </th>
+                            )}
                           </>
                         )
                       })
