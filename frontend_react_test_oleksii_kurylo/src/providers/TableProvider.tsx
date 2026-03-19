@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, type ReactNode } from "react";
 
 import { ModalContext } from "./ModalProvider";
 
@@ -14,9 +14,13 @@ type ContextType = {
   updateCells: (value: ICell[][]) => void;
 };
 
+type TableProviderProps = {
+  children: ReactNode;
+};
+
 export const TableContext = React.createContext<ContextType | null>(null);
 
-const TableProvider: React.FC<React.ReactNode> = ({ children }) => {
+const TableProvider: React.FC<TableProviderProps> = ({ children }) => {
   const modalContext = useContext(ModalContext);
 
   const [cells, setCells] = useState<ICell[][]>([]);
@@ -56,7 +60,7 @@ const TableProvider: React.FC<React.ReactNode> = ({ children }) => {
           } else {
             cellData.rowSum = correctRowSum;
           }
-          cellData.percentageInRow = Math.round(cellData.amount / cellData.rowSum * 100);
+          cellData.percentageInRow = Math.round(+cellData.amount / cellData.rowSum * 100);
         })
         tableData.push(rowData.reverse())
         rowData = [];

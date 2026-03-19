@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type ReactNode } from "react";
 
 type ContextType = {
   rows: {
@@ -22,9 +22,13 @@ type ContextType = {
   setSubmited: (value: boolean) => void;
 };
 
+type ModalProviderProps = {
+  children: ReactNode;
+};
+
 export const ModalContext = React.createContext<ContextType | null>(null);
 
-const ModalProvider: React.FC<React.ReactNode> = ({ children }) => {
+const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [rowsValue, setRowsValue] = useState(1);
   const [columnsValue, setColumnsValue] = useState(1);
   const [limits, setLimits] = useState(1);
