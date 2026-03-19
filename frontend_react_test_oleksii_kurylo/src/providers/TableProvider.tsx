@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 
 import { ModalContext } from "./ModalProvider";
 
-interface ICell {
+export interface ICell {
   id: number;
   amount: number;
   rowSum: number;
@@ -11,6 +11,7 @@ interface ICell {
 
 type ContextType = {
   cells: ICell[][];
+  updateCells: (value: ICell[][]) => void;
 };
 
 export const TableContext = React.createContext<ContextType | null>(null);
@@ -22,24 +23,7 @@ const TableProvider: React.FC<React.ReactNode> = ({ children }) => {
   const [rows, setRows] = useState<number>(0);
   const [columns, setColumns] = useState<number>(0);
 
-  useEffect(() => {
-    if (modalContext?.isSubmited) {
-      setRows(modalContext.rows.quantity);
-      setColumns(modalContext.columns.quantity);
-    }
-  },[modalContext]);
-
-  useEffect(() => {
-    if (rows && columns) {
-      PrepareTableData();
-    }
-  },[rows, columns]);
-
-  useEffect(() => {
-    if (rows && columns) {
-      PrepareTableData();
-    }
-  },[rows, columns]);
+  const saveUpdateCells = (value: ICell[][]): void => {setCells(value)};
 
   const PrepareTableData = () => {
     if (modalContext?.isSubmited) {
@@ -82,10 +66,24 @@ const TableProvider: React.FC<React.ReactNode> = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (modalContext?.isSubmited) {
+      setRows(modalContext.rows.quantity);
+      setColumns(modalContext.columns.quantity);
+    }
+  },[modalContext]);
+
+  useEffect(() => {
+    if (rows && columns) {
+      PrepareTableData();
+    }
+  },[rows, columns]);
+
   return (
     <TableContext.Provider
       value={{
         cells,
+        updateCells: saveUpdateCells,
       }}
     >
       {children}

@@ -1,31 +1,116 @@
-import { useContext, useEffect } from "react";
+import { useContext, useState } from "react";
+import { TableContext, type ICell} from "../../providers/TableProvider";
 import { ModalContext } from "../../providers/ModalProvider";
-import { TableContext } from "../../providers/TableProvider";
 
 import "./Table.css";
 
+type DiffAmountType = {
+  diff: number;
+  id: number;
+  amount: number;
+}
+
 export const Table = () => {
-  const modalContext = useContext(ModalContext);
   const tableContext = useContext(TableContext);
+  const modalContext = useContext(ModalContext);
+
   const columnSum: number[] = [];
+  const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
+  const [highlightCellsIds, setHighlightCellsIds] = useState<DiffAmountType[]>([]);
+  
+  const onClickHandleToCell = (rowIndex: number, cellIndex: number, cell: ICell) => {
+    const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
 
-  useEffect(() => {
-    modalContext?.isSubmited && console.log("App modalContext = ", modalContext)
-  }, [modalContext]);
+    tableData.forEach((row: ICell[], indexRow: number) => {
+      if (rowIndex === indexRow) {
+        row.forEach((cell: ICell, indexCell: number) => {
+          if (cellIndex === indexCell) {
+            cell.percentageInRow = Math.round((cell.amount + 1) / (cell.rowSum + 1) * 100);
+            cell.amount = cell.amount + 1;
+          } else {
+            cell.percentageInRow = Math.round(cell.amount / (cell.rowSum + 1) * 100);
+          }
+          cell.rowSum = cell.rowSum + 1;
+        });
+      }
+    });
+    tableContext?.updateCells(tableData);
+    onHoverHandlerToCell(cell);
+  };
 
-  useEffect(() => {
-    if (tableContext?.cells.length) {
-      console.log("Table tableContext = ", tableContext)
-      console.log("Table columnSum = ", columnSum)
+  const onHoverHandlerToCell = (selectedCell: ICell) => {
+    const resultSortedSet: DiffAmountType[] = [];
+    const limitLength = modalContext?.limits.quantity;
+    
+    resultSortedSet.push({
+      diff: 0,
+      id: selectedCell.id,
+      amount: selectedCell.amount,
+    });
+
+    tableContext?.cells.forEach((row) => {
+      row.forEach((cell) => {
+        if (limitLength && limitLength > 1 && cell.id !== selectedCell.id) {
+          const currentDiff: DiffAmountType = {
+            diff: Math.abs(cell.amount - selectedCell.amount),
+            id: cell.id,
+            amount: cell.amount,
+          };
+          if (resultSortedSet.length < limitLength) {
+            resultSortedSet.push(currentDiff)
+          } else {
+            if ((resultSortedSet[0].diff - currentDiff.diff) > 0) {
+              resultSortedSet.splice(0, 1, currentDiff);
+            }
+          }
+          resultSortedSet.sort((a, b) => (a.diff > b.diff ? -1 : 1));
+        }
+      })
+    });
+    setHighlightCellsIds(resultSortedSet);
+  };
+
+  const onClickSumHandler = (rowIndex: number) => {
+    const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
+    tableData.splice(rowIndex, 1)
+    tableContext?.updateCells(tableData);
+  }
+
+  const onClickEmptyCellHandler = () => {
+    const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
+    const rowLength = tableData[0].length;
+    const newRow: ICell[] = [];
+    const lastId: number = tableData[tableData.length - 1][tableData[tableData.length - 1].length - 1].id;
+    let correctRowSum = 0;
+
+    const amountGeneration = (): number => Math.round(Math.random() * 100);
+    let newRowSum = 0;
+    for (let i = 0; i < rowLength; i++) {
+      const amount = amountGeneration();
+      const newCellData: ICell = {
+        id: lastId + i + 1,
+        amount,
+        rowSum: newRowSum + amount,
+        percentageInRow: 0,
+      }
+      newRow.push(newCellData);
     }
-  }, [tableContext?.cells]);
+
+    newRow.reverse().forEach((cellData, index) => {
+      correctRowSum = !index ? cellData.rowSum : correctRowSum;
+      cellData.percentageInRow = Math.round(cellData.amount / cellData.rowSum * 100);
+    })
+    
+    tableData.push(newRow.reverse());
+    tableContext?.updateCells(tableData);
+  }
 
   return (
     <div className='table'>
       <table className="content-table">
         <thead>
           <tr key="tr-head">
-            {tableContext?.cells.length && tableContext?.cells[0].length && tableContext?.cells[0].map((cell, index) => {
+            {tableContext?.cells.length && tableContext?.cells[0].length && tableContext?.cells[0].map((_, index) => {
               return (
                 <>
                   {!index && <th key={`th-0${index}`} scope="col"/>}
@@ -53,8 +138,26 @@ export const Table = () => {
                         return (
                           <>
                             {!indexCell && <th key={`th-${indexRow}.${indexCell}`} scope="col">{`Cell values M = ${indexRow + 1}`}</th>}
-                            <td key={`th-${indexRow}.${indexCell + 1}`}>{cell.amount}</td>
-                            {indexCell === row.length - 1 && <th key={`th-${indexRow}.${indexCell + 2}`} scope="col">{cell.rowSum}</th>}
+                            <td
+                              className={ highlightCellsIds.some((selectCell) => selectCell.id === cell.id) ? "highlight_limit" : ""}
+                              key={`th-${indexRow}.${indexCell + 1}`}
+                              onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
+                              onMouseEnter={() => {onHoverHandlerToCell(cell)}}
+                              onMouseLeave={() => {setHighlightCellsIds([])}}
+                            >
+                              {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow} %` : cell.amount}
+                            </td>
+                            {indexCell === row.length - 1 && (
+                              <th
+                                key={`th-${indexRow}.${indexCell + 2}`} 
+                                scope="col"
+                                onMouseEnter={() => {setHoveredIndexRow(indexRow)}}
+                                onMouseLeave={() => {setHoveredIndexRow(null)}}
+                                onClick={() => onClickSumHandler(indexRow)}
+                              >
+                                {cell.rowSum}
+                              </th>
+                            )}
                           </>
                         )
                       })
@@ -68,7 +171,13 @@ export const Table = () => {
                             <>
                               {!indexSum && <th key={`th-${indexRow + 1}.${indexSum}`} scope="col">60th percentile</th>}
                               <th key={`th-${indexRow + 1}.${indexSum + 1}`}>{sum*60/100}</th>
-                              {indexSum === row.length - 1 && <th key={`th-${indexRow + 1}.${indexSum + 2}`} scope="col"/>}
+                              {indexSum === row.length - 1 && (
+                                <th
+                                  key={`th-${indexRow + 1}.${indexSum + 2}`}
+                                  scope="col"
+                                  onClick={onClickEmptyCellHandler}
+                                />
+                              )}
                             </>
                           )
                         })

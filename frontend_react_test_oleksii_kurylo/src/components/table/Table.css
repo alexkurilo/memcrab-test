@@ -43,6 +43,11 @@
 .content-table tbody tr:hover,
 .content-table tbody tr.active-row:hover {
   background: #dddddd;
+  cursor: pointer;
+}
+
+.content-table tbody tr td.highlight_limit {
+  background: #f4a08f;
 }
   
 .content-table tbody tr:nth-of-type(even) {
