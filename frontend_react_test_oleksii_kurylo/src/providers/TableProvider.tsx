@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect, type ReactNode } from "react";
 
 import { ModalContext } from "./ModalProvider";
-
+import { amountGeneration } from "../helpers";
 export interface ICell {
   id: number;
   amount: number;
+  maxAmount: number;
   rowSum: number;
   percentageInRow: number;
 }
@@ -33,35 +34,36 @@ const TableProvider: React.FC<TableProviderProps> = ({ children }) => {
     if (modalContext?.isSubmited) {
       const tableData = []
       let rowData = [];
-
       let id = 0;
 
-      const amountGeneration = (): number => Math.round(Math.random() * 100);
-
       for (let r = 1; r <= rows; r++) {
-        let rowSum = 0;
+        let rowSum = 0, maxAmount = 0, correctRowSum = 0;
+
         for (let c = 1; c <= columns; c++) {
           const amount = amountGeneration();
           rowSum = rowSum + amount;
+          maxAmount = maxAmount < amount ? amount : maxAmount;
 
           const cellData = {
             id,
             amount,
+            maxAmount: 0,
             rowSum,
             percentageInRow: 0,
           };
           rowData.push(cellData);
           id++;
         }
-        let correctRowSum = 0;
+
         rowData.reverse().forEach((cellData, index) => {
           if (!index) {
             correctRowSum = cellData.rowSum;
           } else {
             cellData.rowSum = correctRowSum;
           }
+          cellData.maxAmount = maxAmount;
           cellData.percentageInRow = Math.round(+cellData.amount / cellData.rowSum * 100);
-        })
+        });
         tableData.push(rowData.reverse())
         rowData = [];
       }
