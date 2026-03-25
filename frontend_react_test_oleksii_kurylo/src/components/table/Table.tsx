@@ -1,6 +1,10 @@
 import { useContext, useState } from "react";
+import chroma from "chroma-js";
+
 import { TableContext, type ICell} from "../../providers/TableProvider";
 import { ModalContext } from "../../providers/ModalProvider";
+import { amountGeneration } from "../../helpers";
+import { hotHexColor, coldHexColor } from "../../constants";
 
 import "./Table.css";
 
@@ -17,6 +21,10 @@ export const Table = () => {
   const columnSum: number[] = [];
   const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
   const [highlightCellsIds, setHighlightCellsIds] = useState<DiffAmountType[]>([]);
+
+  const chromaScale = chroma.scale([hotHexColor, coldHexColor]).domain([1, 0]);
+  const generateBackgroundColor = (value: number) =>
+    isNaN(value) ? {} : { backgroundColor: chromaScale(value).hex() };
   
   const onClickHandleToCell = (rowIndex: number, cellIndex: number, cell: ICell) => {
     const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
@@ -81,26 +89,27 @@ export const Table = () => {
     const rowLength = tableData[0].length;
     const newRow: ICell[] = [];
     const lastId: number = tableData[tableData.length - 1][tableData[tableData.length - 1].length - 1].id;
-    let correctRowSum = 0;
+    let rowSum = 0, maxAmount = 0;
 
-    const amountGeneration = (): number => Math.round(Math.random() * 100);
-    let newRowSum = 0;
     for (let i = 0; i < rowLength; i++) {
       const amount = amountGeneration();
+      rowSum += amount;
       const newCellData: ICell = {
         id: lastId + i + 1,
         amount,
-        rowSum: newRowSum + amount,
+        maxAmount: 0,
+        rowSum: 0,
         percentageInRow: 0,
       }
+      maxAmount = maxAmount < amount ? amount : maxAmount;
       newRow.push(newCellData);
     }
-
-    newRow.reverse().forEach((cellData, index) => {
-      correctRowSum = !index ? cellData.rowSum : correctRowSum;
+    newRow.reverse().forEach(cellData => {
+      cellData.rowSum = rowSum;
+      cellData.maxAmount = maxAmount;
       cellData.percentageInRow = Math.round(cellData.amount / cellData.rowSum * 100);
     })
-    
+
     tableData.push(newRow.reverse());
     tableContext?.updateCells(tableData);
   }
@@ -144,6 +153,7 @@ export const Table = () => {
                               onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
                               onMouseEnter={() => {onHoverHandlerToCell(cell)}}
                               onMouseLeave={() => {setHighlightCellsIds([])}}
+                              style={hoveredIndexRow !== null && hoveredIndexRow === indexRow ? generateBackgroundColor(cell.amount / cell.maxAmount) : {}}
                             >
                               {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow} %` : cell.amount}
                             </td>

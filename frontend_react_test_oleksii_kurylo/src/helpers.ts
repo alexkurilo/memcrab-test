@@ -1,0 +1,1 @@
+export const amountGeneration = (): number => Math.round(Math.random() * 999);
