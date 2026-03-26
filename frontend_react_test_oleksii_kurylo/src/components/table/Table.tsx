@@ -151,9 +151,9 @@ export const Table = () => {
                               onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
                               onMouseEnter={() => {onHoverHandlerToCell(cell)}}
                               onMouseLeave={() => {setHighlightCellsIds([])}}
-                              data-bg-color={hoveredIndexRow !== null && hoveredIndexRow === indexRow ? chromaScale(cell.amount / cell.maxAmount).hex() : null}
+                              data-bg-color={hoveredIndexRow !== null && hoveredIndexRow === indexRow ? chromaScale(cell.amount / cell.maxAmount).hex() : "transparent"}
                             >
-                              {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow} %` : cell.amount}
+                              {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow}%` : cell.amount}
                             </td>
                             {indexCell === row.length - 1 && (
                               <th
