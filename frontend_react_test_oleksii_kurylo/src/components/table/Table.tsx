@@ -23,8 +23,6 @@ export const Table = () => {
   const [highlightCellsIds, setHighlightCellsIds] = useState<DiffAmountType[]>([]);
 
   const chromaScale = chroma.scale([hotHexColor, coldHexColor]).domain([1, 0]);
-  const generateBackgroundColor = (value: number) =>
-    isNaN(value) ? {} : { backgroundColor: chromaScale(value).hex() };
   
   const onClickHandleToCell = (rowIndex: number, cellIndex: number, cell: ICell) => {
     const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
