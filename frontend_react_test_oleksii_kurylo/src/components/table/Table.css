@@ -46,6 +46,10 @@
   cursor: pointer;
 }
 
+.content-table tbody tr td {
+  background-color: attr(data-bg-color type(<color>));
+}
+
 .content-table tbody tr td.highlight_limit {
   background: #f4a08f;
 }

@@ -143,7 +143,7 @@ export const Table = () => {
                         } else {
                           columnSum[indexCell] = columnSum[indexCell] + cell.amount;
                         };
-                        
+
                         return (
                           <>
                             {!indexCell && <th key={`th-${indexRow}.${indexCell}`} scope="col">{`Cell values M = ${indexRow + 1}`}</th>}
@@ -153,7 +153,7 @@ export const Table = () => {
                               onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
                               onMouseEnter={() => {onHoverHandlerToCell(cell)}}
                               onMouseLeave={() => {setHighlightCellsIds([])}}
-                              style={hoveredIndexRow !== null && hoveredIndexRow === indexRow ? generateBackgroundColor(cell.amount / cell.maxAmount) : {}}
+                              data-bg-color={hoveredIndexRow !== null && hoveredIndexRow === indexRow ? chromaScale(cell.amount / cell.maxAmount).hex() : null}
                             >
                               {hoveredIndexRow !==null && hoveredIndexRow === indexRow ? `${cell.percentageInRow} %` : cell.amount}
                             </td>
