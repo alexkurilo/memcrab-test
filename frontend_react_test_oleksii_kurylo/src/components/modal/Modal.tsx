@@ -1,24 +1,26 @@
-import { useContext, useRef } from "react";
+import { type FC, useContext, useRef } from "react";
 import { createPortal } from "react-dom";
+
 import { NumberInput } from "../numberInput/NumberInput";
 import { ModalContext } from "../../providers/ModalProvider";
 
 import "./Modal.css";
 
-
-export const Modal = () => {
+export const Modal: FC = () => {
   const modalContext = useContext(ModalContext);
   const modalRef = useRef(null);
   const isNotDisabledButton = 
-    (!modalContext?.isCanceled && !modalContext?.rows.isError && !modalContext?.columns.isError)
-    || (modalContext?.isCanceled && !modalContext?.limits.isError);
-  const buttonText = !modalContext?.isCanceled ? "Cancel" : "Submit";
+    (!modalContext?.cancel?.value && !modalContext?.rows.isError && !modalContext?.columns.isError)
+    || (modalContext?.cancel?.value && !modalContext?.limits.isError);
+  const buttonText = !modalContext?.cancel?.value ? "Cancel" : "Submit";
 
   const onClickHandler = () => {
     if (isNotDisabledButton) {
-      !modalContext?.isCanceled ? modalContext?.setCanceled(true) : modalContext?.setSubmited(true);
+      !modalContext?.cancel?.value 
+        ? modalContext?.cancel?.updateValue(true) 
+        : modalContext?.submit?.updateValue(true);
     }
-  }
+  };
   
   return createPortal( 
     <div
@@ -30,10 +32,10 @@ export const Modal = () => {
     >
       <div className="modal-container">
         <h2 id="heading">
-          {`Please enter the value ${!modalContext?.isCanceled ? "s ​​of M and N" : " of X"}.`}
+          {`Please enter the value${!modalContext?.cancel?.value ? "s ​​of M and N" : " of X"}.`}
         </h2>
         {
-          !modalContext?.isCanceled ? (
+          !modalContext?.cancel?.value ? (
             <>
               <NumberInput inputName="rowsInput"/>
               <NumberInput inputName="columnsInput"/>
@@ -53,6 +55,3 @@ export const Modal = () => {
     document.body
   ); 
 }; 
-  
-
-export default Modal

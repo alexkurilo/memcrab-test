@@ -1,68 +1,49 @@
-import React, { useState, type ReactNode } from "react";
+import { type FC, type ReactNode, createContext, useState } from "react";
 
-type ContextType = {
-  rows: {
-    quantity: number;
-    setQuantity: (quantity: number) => void;
-    isError: boolean;
-  };
-  columns: {
-    quantity: number;
-    setQuantity: (quantity: number) => void;
-    isError: boolean;
-  };
-  limits: {
-    quantity: number;
-    setQuantity: (quantity: number) => void;
-    isError: boolean;
-  };
-  isCanceled: boolean;
-  isSubmited: boolean;
-  setCanceled: (value: boolean) => void;
-  setSubmited: (value: boolean) => void;
-};
+import { type ModalContextType } from "../types";
+import { minInputValue, maxInputValue } from "../constants";
 
-type ModalProviderProps = {
-  children: ReactNode;
-};
+export const ModalContext = createContext<ModalContextType | null>(null);
 
-export const ModalContext = React.createContext<ContextType | null>(null);
-
-const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
-  const [rowsValue, setRowsValue] = useState(1);
-  const [columnsValue, setColumnsValue] = useState(1);
-  const [limits, setLimits] = useState(1);
+const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const [rows, setRows] = useState(minInputValue);
+  const [columns, setColumns] = useState(minInputValue);
+  const [limits, setLimits] = useState(minInputValue);
   const [isCanceled, setIsCanceled] = useState(false);
-  const [isSubmited, setIsSubmited] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const saveRowsValue = (rowsValue: number) => {setRowsValue(rowsValue)};
-  const saveColumnsValue = (columnsValue: number) => {setColumnsValue(columnsValue)};
-  const saveLimits = (limitsValue: number) => {setLimits(limitsValue)};
-  const saveIsCanceled = (value: boolean) => {setIsCanceled(value)};
-  const saveIsSubmited = (value: boolean) => {setIsSubmited(value)};
+  const updateRows = (rows: number) => {setRows(rows)};
+  const updateColumns = (columns: number) => {setColumns(columns)};
+  const updateLimits = (limits: number) => {setLimits(limits)};
+  const updateIsCanceled = (value: boolean) => {setIsCanceled(value)};
+  const updateIsSubmitted = (value: boolean) => {setIsSubmitted(value)};
 
   return (
     <ModalContext.Provider
       value={{
         rows: {
-          quantity: rowsValue,
-          setQuantity: saveRowsValue,
-          isError: rowsValue < 1 || rowsValue > 100,
+          quantity: rows,
+          updateQuantity: updateRows,
+          isError: rows < minInputValue || rows > maxInputValue,
         },
         columns: {
-          quantity: columnsValue,
-          setQuantity: saveColumnsValue,
-          isError: columnsValue < 1 || columnsValue > 100,
+          quantity: columns,
+          updateQuantity: updateColumns,
+          isError: columns < minInputValue || columns > maxInputValue,
         },
         limits: {
           quantity: limits,
-          setQuantity: saveLimits,
-          isError: limits < 1 || limits > columnsValue * rowsValue,
+          updateQuantity: updateLimits,
+          isError: limits < minInputValue || limits > columns * rows,
         },
-        isCanceled,
-        setCanceled: saveIsCanceled,
-        isSubmited,
-        setSubmited: saveIsSubmited,
+        cancel: {
+          value: isCanceled,
+          updateValue: updateIsCanceled,
+        },
+        submit: {
+          value: isSubmitted,
+          updateValue: updateIsSubmitted,
+        },
       }}
     >
       {children}
