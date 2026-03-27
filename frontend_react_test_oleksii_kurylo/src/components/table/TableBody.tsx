@@ -6,7 +6,7 @@ import { ModalContext } from "../../providers/ModalProvider";
 import { hotHexColor, coldHexColor } from "../../constants";
 import { type ICell, type HighlightCellType } from "../../types";
 import { LastTableRow } from "./LastTableRow";
-import { Popup } from "./Popup";
+import { ButtonsBlock } from "./ButtonsBlock";
 
 import "./Table.css";
 
@@ -105,7 +105,7 @@ export const TableBody: FC = () => {
             onMouseLeave={onMouseLeaveHandler}
             onClick={() => onClickSumHandler(indexRow)}
           >
-            {openPopup === indexRow ? <Popup rowIndex={indexRow}/> : row[row.length - 1].rowSum}
+            {openPopup === indexRow ? <ButtonsBlock rowIndex={indexRow}/> : row[row.length - 1].rowSum}
           </th>
         </tr>
       ))}
