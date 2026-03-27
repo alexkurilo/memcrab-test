@@ -1,27 +1,12 @@
-import React, { useContext, useState, useEffect, type ReactNode } from "react";
+import { type FC, type ReactNode, createContext, useContext, useState, useEffect } from "react";
 
+import { type TableContextType, type ICell } from "../types";
 import { ModalContext } from "./ModalProvider";
-import { amountGeneration } from "../helpers";
-export interface ICell {
-  id: number;
-  amount: number;
-  maxAmount: number;
-  rowSum: number;
-  percentageInRow: number;
-}
+import { PrepareTable } from "../helpers";
 
-type ContextType = {
-  cells: ICell[][];
-  updateCells: (value: ICell[][]) => void;
-};
+export const TableContext = createContext<TableContextType | null>(null);
 
-type TableProviderProps = {
-  children: ReactNode;
-};
-
-export const TableContext = React.createContext<ContextType | null>(null);
-
-const TableProvider: React.FC<TableProviderProps> = ({ children }) => {
+const TableProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const modalContext = useContext(ModalContext);
 
   const [cells, setCells] = useState<ICell[][]>([]);
@@ -30,50 +15,8 @@ const TableProvider: React.FC<TableProviderProps> = ({ children }) => {
 
   const saveUpdateCells = (value: ICell[][]): void => {setCells(value)};
 
-  const PrepareTableData = () => {
-    if (modalContext?.isSubmited) {
-      const tableData = []
-      let rowData = [];
-      let id = 0;
-
-      for (let r = 1; r <= rows; r++) {
-        let rowSum = 0, maxAmount = 0, correctRowSum = 0;
-
-        for (let c = 1; c <= columns; c++) {
-          const amount = amountGeneration();
-          rowSum = rowSum + amount;
-          maxAmount = maxAmount < amount ? amount : maxAmount;
-
-          const cellData = {
-            id,
-            amount,
-            maxAmount: 0,
-            rowSum,
-            percentageInRow: 0,
-          };
-          rowData.push(cellData);
-          id++;
-        }
-
-        rowData.reverse().forEach((cellData, index) => {
-          if (!index) {
-            correctRowSum = cellData.rowSum;
-          } else {
-            cellData.rowSum = correctRowSum;
-          }
-          cellData.maxAmount = maxAmount;
-          cellData.percentageInRow = Math.round(+cellData.amount / cellData.rowSum * 100);
-        });
-        tableData.push(rowData.reverse())
-        rowData = [];
-      }
-
-      setCells(tableData);
-    }
-  };
-
   useEffect(() => {
-    if (modalContext?.isSubmited) {
+    if (modalContext?.submit.value) {
       setRows(modalContext.rows.quantity);
       setColumns(modalContext.columns.quantity);
     }
@@ -81,7 +24,8 @@ const TableProvider: React.FC<TableProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (rows && columns) {
-      PrepareTableData();
+      const tableData = PrepareTable(rows, columns);
+      setCells(tableData);
     }
   },[rows, columns]);
 

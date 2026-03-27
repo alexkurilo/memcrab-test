@@ -1,11 +1,9 @@
 import { type FC, useRef, useState, type ChangeEvent, useEffect, useContext } from "react";
+
 import { ModalContext } from "../../providers/ModalProvider";
+import { minInputValue, maxInputValue } from "../../constants";
 
-type Props = {
-  inputName: string
-}
-
-export const NumberInput: FC<Props>  = (props) => {
+export const NumberInput: FC<{ inputName: string }>  = (props) => {
   const modalContext = useContext(ModalContext);
   const inputName = props.inputName;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -18,22 +16,22 @@ export const NumberInput: FC<Props>  = (props) => {
       : "X - is the number of limits";
 
   const errorValue: string | void = (inputName === 'rowsInput')
-    ? "M must be between 1 and 100"
+    ? `M must be between ${minInputValue} and ${maxInputValue}`
     : inputName === 'columnsInput' 
-      ? "N must be between 1 and 100"
-      : `X must be between 1 and ${modalContext?.rows?.quantity && modalContext?.columns.quantity && modalContext?.rows?.quantity * modalContext?.columns.quantity}`;
+      ? `N must be between ${minInputValue} and ${maxInputValue}`
+      : `X must be between ${minInputValue} and ${modalContext?.rows?.quantity && modalContext?.columns.quantity && modalContext?.rows?.quantity * modalContext?.columns.quantity}`;
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const value = +event.target.value;
 
     if (inputName !== 'limitsInput') {
-      if (value >= 1 && value <= 100) {
+      if (value >= minInputValue && value <= maxInputValue) {
         isError && setIsError(false);
       } else {
         !isError && setIsError(true);
       }  
     } else {
-      if (value >= 1 && modalContext?.rows?.quantity && value <= modalContext?.rows?.quantity * modalContext?.columns.quantity) {
+      if (value >= minInputValue && modalContext?.rows?.quantity && value <= modalContext?.rows?.quantity * modalContext?.columns.quantity) {
         isError && setIsError(false);
       } else {
         !isError && setIsError(true);
@@ -41,10 +39,10 @@ export const NumberInput: FC<Props>  = (props) => {
     }
     
     inputName === 'rowsInput' 
-      ? modalContext?.rows.setQuantity(value) 
+      ? modalContext?.rows.updateQuantity(value) 
       : inputName === 'columnsInput' 
-        ? modalContext?.columns.setQuantity(value)
-        : modalContext?.limits.setQuantity(value);
+        ? modalContext?.columns.updateQuantity(value)
+        : modalContext?.limits.updateQuantity(value);
   }
 
   useEffect(() => {
@@ -54,15 +52,15 @@ export const NumberInput: FC<Props>  = (props) => {
   return (
     <div className="input-group">
       <label htmlFor={inputName}>
-        {labelValue || null}
+        {labelValue}
       </label>
       <input
         id={inputName}
         name={inputName}
         type="number"
-        defaultValue={1}
-        min={1}
-        max={inputName !== 'limitsInput' ? 100 : modalContext?.rows?.quantity && modalContext?.rows?.quantity * modalContext?.columns.quantity}
+        defaultValue={minInputValue}
+        min={minInputValue}
+        max={inputName !== 'limitsInput' ? maxInputValue : modalContext?.rows?.quantity && modalContext?.rows?.quantity * modalContext?.columns.quantity}
         ref={inputRef}
         onChange={onChangeHandler}
       />
@@ -72,6 +70,3 @@ export const NumberInput: FC<Props>  = (props) => {
     </div>       
   ); 
 }; 
-  
-
-export default NumberInput;
