@@ -3,9 +3,7 @@ import { type FC, useContext } from "react";
 import { TableContext} from "../../providers/TableProvider";
 import { PrepareRow } from "../../helpers";
 
-import "./Popup.css";
-
-export const Popup: FC<{ rowIndex: number }> = ({ rowIndex }) => {
+export const ButtonsBlock: FC<{ rowIndex: number }> = ({ rowIndex }) => {
   const tableContext = useContext(TableContext);
 
   const onClickDeleteHandler = () => {
@@ -25,16 +23,16 @@ export const Popup: FC<{ rowIndex: number }> = ({ rowIndex }) => {
   };
 
   return (
-    <span className='popup'>
+    <span className='buttons-block'>
       <button
-        className="popup-button"
+        className="delete-button"
         onClick={onClickDeleteHandler}
       >
         Delete row
       </button>
       {tableContext?.cells.length && rowIndex === tableContext?.cells.length - 1 ? (
         <button
-          className="popup-button"
+          className="add-button"
           onClick={onClickAddHandler}
         >
           Add row
