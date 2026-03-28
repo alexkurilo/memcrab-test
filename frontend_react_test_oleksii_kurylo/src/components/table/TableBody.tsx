@@ -1,9 +1,8 @@
 import { type FC, useContext, useState } from "react";
-import chroma from "chroma-js";
 
 import { TableContext} from "../../providers/TableProvider";
 import { ModalContext } from "../../providers/ModalProvider";
-import { hotHexColor, coldHexColor } from "../../constants";
+import { getColorHex } from "../../helpers";
 import { type ICell, type HighlightCellType } from "../../types";
 import { LastTableRow } from "./LastTableRow";
 import { ButtonsBlock } from "./ButtonsBlock";
@@ -17,8 +16,6 @@ export const TableBody: FC = () => {
   const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
   const [highlightCellsIds, setHighlightCellsIds] = useState<HighlightCellType[]>([]);
   const [openPopup, setOpenPopup] = useState<number | null>(null);
-
-  const chromaScale = chroma.scale([hotHexColor, coldHexColor]).domain([1, 0]);
   
   const onClickHandleToCell = (rowIndex: number, cellIndex: number, cell: ICell) => {
     const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
@@ -90,11 +87,10 @@ export const TableBody: FC = () => {
           {row.length && row.map((cell, indexCell) => (
             <td
               key={`th-${indexRow}.${indexCell + 1}`}
-              className={ highlightCellsIds.some((selectCell) => selectCell.id === cell.id) ? "highlight_limit" : ""}
               onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
               onMouseEnter={() => {onHoverHandlerToCell(cell)}}
               onMouseLeave={() => {setHighlightCellsIds([])}}
-              data-bg-color={hoveredIndexRow !== null && hoveredIndexRow === indexRow ? chromaScale(cell.amount / cell.maxAmount).hex() : "transparent"}
+              data-bg-color={getColorHex(indexRow, cell, hoveredIndexRow, highlightCellsIds)}
             >
               {hoveredIndexRow !== null && hoveredIndexRow === indexRow ? `${cell.percentageInRow}%` : cell.amount}
             </td>

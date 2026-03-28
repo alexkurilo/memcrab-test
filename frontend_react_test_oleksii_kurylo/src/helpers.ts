@@ -1,5 +1,8 @@
-import { type ICell } from "./types";
+import chroma from "chroma-js";
+
+import { type ICell, type HighlightCellType } from "./types";
 import { maxAmountGenerate, minInputValue } from "./constants";
+import { hotHexColor, coldHexColor } from "./constants";
 
 export const amountGeneration = (): number => Math.round(Math.random() * maxAmountGenerate);
 
@@ -60,4 +63,26 @@ export const PrepareCell = (id: number, lastRowSum: number): ICell => {
   };
 
   return cellData;
+};
+
+export const chromaScale = chroma.scale([hotHexColor, coldHexColor]).domain([1, 0]);
+
+export const getColorHex = (
+  indexRow: number,
+  cell: ICell,
+  hoveredIndexRow: number | null,
+  highlightCellsIds: HighlightCellType[],
+): string => {
+  let result = "transparent";
+  const isHeatmap = hoveredIndexRow !== null && hoveredIndexRow === indexRow;
+  const highlightCell = highlightCellsIds.find((selectCell) => selectCell.id === cell.id);
+
+  isHeatmap && (result = chromaScale(cell.amount / cell.maxAmount).hex());
+
+  if (highlightCell !== undefined) {
+    const maxDiff = highlightCellsIds[0].diff;
+    result = chromaScale(1 - highlightCell.diff / maxDiff).hex();
+  };
+
+  return result;
 };
