@@ -66,6 +66,10 @@
 .content-table tbody tr td {
   background-color: attr(data-bg-color type(<color>));
 }
+
+.content-table tbody tr td.highlighted_cell {
+  background-color: #f4a08f;
+}
   
 .content-table tbody tr:nth-of-type(even) {
   background: #f3f3f3;
