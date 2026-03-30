@@ -2,7 +2,7 @@ import { type FC, useContext, useState } from "react";
 
 import { TableContext} from "../../providers/TableProvider";
 import { ModalContext } from "../../providers/ModalProvider";
-import { getColorHex } from "../../helpers";
+import { getClassName, getColorHex } from "../../helpers";
 import { type ICell, type HighlightCellType } from "../../types";
 import { LastTableRow } from "./LastTableRow";
 import { ButtonsBlock } from "./ButtonsBlock";
@@ -15,7 +15,7 @@ export const TableBody: FC = () => {
 
   const [hoveredIndexRow, setHoveredIndexRow] = useState<number | null>(null);
   const [highlightCellsIds, setHighlightCellsIds] = useState<HighlightCellType[]>([]);
-  const [openPopup, setOpenPopup] = useState<number | null>(null);
+  const [showButtonsBlock, setShowButtonsBlock] = useState<number | null>(null);
   
   const onClickHandleToCell = (rowIndex: number, cellIndex: number, cell: ICell) => {
     const tableData = JSON.parse(JSON.stringify(tableContext?.cells));
@@ -71,12 +71,12 @@ export const TableBody: FC = () => {
   };
 
   const onClickSumHandler = (rowIndex: number) => {    
-    setOpenPopup(rowIndex === openPopup ? null : rowIndex);
+    setShowButtonsBlock(rowIndex === showButtonsBlock ? null : rowIndex);
   };
 
   const onMouseLeaveHandler = () => {    
     setHoveredIndexRow(null);
-    setOpenPopup(null);
+    setShowButtonsBlock(null);
   };
 
   return tableContext?.cells.length ? (
@@ -87,10 +87,11 @@ export const TableBody: FC = () => {
           {row.length && row.map((cell, indexCell) => (
             <td
               key={`th-${indexRow}.${indexCell + 1}`}
+              className={getClassName(cell, highlightCellsIds)}
               onClick={() => onClickHandleToCell(indexRow, indexCell, cell)}
               onMouseEnter={() => {onHoverHandlerToCell(cell)}}
               onMouseLeave={() => {setHighlightCellsIds([])}}
-              data-bg-color={getColorHex(indexRow, cell, hoveredIndexRow, highlightCellsIds)}
+              data-bg-color={getColorHex(indexRow, cell, hoveredIndexRow)}
             >
               {hoveredIndexRow !== null && hoveredIndexRow === indexRow ? `${cell.percentageInRow}%` : cell.amount}
             </td>
@@ -101,7 +102,7 @@ export const TableBody: FC = () => {
             onMouseLeave={onMouseLeaveHandler}
             onClick={() => onClickSumHandler(indexRow)}
           >
-            {openPopup === indexRow ? <ButtonsBlock rowIndex={indexRow}/> : row[row.length - 1].rowSum}
+            {showButtonsBlock === indexRow ? <ButtonsBlock rowIndex={indexRow}/> : row[row.length - 1].rowSum}
           </th>
         </tr>
       ))}

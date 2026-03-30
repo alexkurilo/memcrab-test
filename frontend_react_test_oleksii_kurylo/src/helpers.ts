@@ -71,18 +71,21 @@ export const getColorHex = (
   indexRow: number,
   cell: ICell,
   hoveredIndexRow: number | null,
-  highlightCellsIds: HighlightCellType[],
 ): string => {
-  let result = "transparent";
   const isHeatmap = hoveredIndexRow !== null && hoveredIndexRow === indexRow;
-  const highlightCell = highlightCellsIds.find((selectCell) => selectCell.id === cell.id);
 
-  isHeatmap && (result = chromaScale(cell.amount / cell.maxAmount).hex());
+  if (isHeatmap) return chromaScale(cell.amount / cell.maxAmount).hex();
 
-  if (highlightCell !== undefined) {
-    const maxDiff = highlightCellsIds[0].diff;
-    result = chromaScale(1 - highlightCell.diff / maxDiff).hex();
-  };
+  return "transparent";
+};
 
-  return result;
+export const getClassName = (
+  cell: ICell,
+  highlightCellsIds: HighlightCellType[],
+) => {
+  const isHighlightCell = highlightCellsIds.some((selectCell) => selectCell.id === cell.id);
+
+  if (isHighlightCell) return "highlighted_cell";
+
+  return "";
 };
